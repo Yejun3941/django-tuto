@@ -1,3 +1,7 @@
 venv/bin
 venv/lib
 venv/pyvenv.cfg
+
+**/__pycache__
+
+backend/db.sqlite3

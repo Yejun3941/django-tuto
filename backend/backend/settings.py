@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "core.apps.CoreConfig",
     "corsheaders",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',  # ✅ CORS 미들웨어 추가
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -124,3 +126,36 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = "accounts.User" # In accounts app, models.py, User class
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    # JWT를 기본 인증 방식을 사용
+}
+
+# ✅ CORS 설정
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # React(Vite) 클라이언트 주소
+]
+
+# ✅ 모든 요청 방식 허용 (GET, POST, OPTIONS 등)
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+# ✅ 특정 헤더 허용 (필요할 경우)
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+]
+
+# ✅ 클라이언트에서 쿠키를 보낼 수 있도록 설정 (JWT 사용 시 필요)
+CORS_ALLOW_CREDENTIALS = True

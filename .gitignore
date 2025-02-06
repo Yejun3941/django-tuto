@@ -5,3 +5,5 @@ venv/pyvenv.cfg
 **/__pycache__
 
 backend/db.sqlite3
+
+markdown

@@ -27,4 +27,5 @@ urlpatterns = [
     path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"), # If send username, password, will get access token and refresh token
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"), # If send refresh token, will get new access token   
     path("api/accounts/", include("accounts.urls")),
+    path("api/", include("posts.urls")),
 ]

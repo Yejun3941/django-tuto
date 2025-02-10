@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -26,6 +27,7 @@ function Login() {
 
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -43,7 +45,10 @@ function Login() {
       );
       setAccessToken(response.data.access);
       setRefreshToken(response.data.refresh);
+      localStorage.setItem('accessToken', response.data.access);
+      localStorage.setItem('refreshToken', response.data.refresh);
       alert("로그인 성공");
+      navigate('/');
     } catch (error) {
       console.error(error);
       alert("로그인 실패");

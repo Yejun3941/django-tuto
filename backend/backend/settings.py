@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
     "corsheaders",
     "accounts.apps.AccountsConfig",
+    "posts.apps.PostsConfig",
 ]
 
 MIDDLEWARE = [

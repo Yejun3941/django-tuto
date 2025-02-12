@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     "corsheaders",
     "accounts.apps.AccountsConfig",
     "posts.apps.PostsConfig",
+    "channels", # Django Channels 앱 추가
+    "chat.apps.ChatConfig",
 ]
 
 MIDDLEWARE = [
@@ -74,6 +76,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "backend.wsgi.application"
+
+ASGI_APPLICATION = "backend.asgi.application" # ASGI is the protocol used by Django Channels
 
 
 # Database
@@ -140,6 +144,7 @@ REST_FRAMEWORK = {
 # ✅ CORS 설정
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # React(Vite) 클라이언트 주소
+    # "ws://localhost:8001",  # Django Channels 주소 / 주석 처리해도 되는거 보면 문제없나?
 ]
 
 # ✅ 모든 요청 방식 허용 (GET, POST, OPTIONS 등)
@@ -160,3 +165,15 @@ CORS_ALLOW_HEADERS = [
 
 # ✅ 클라이언트에서 쿠키를 보낼 수 있도록 설정 (JWT 사용 시 필요)
 CORS_ALLOW_CREDENTIALS = True
+
+
+# ✅ Django Channels 설정
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer", # Redis를 사용하는 채널 레이어
+        "CONFIG": { # Redis 설정
+            "hosts": [("localhost", 6379), # Redis 주소
+                    ],
+        }
+    }
+}

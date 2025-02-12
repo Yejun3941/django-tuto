@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import PostCreate from './pages/PostCreate';
 import PostList from './pages/PostList';
+import Chat from './pages/Chat';
 
 
 function Home() {
@@ -46,6 +47,7 @@ function Home() {
             <li><Link to="/login">Login</Link></li>
             <li><Link to="/posts/new">PostCreate</Link></li>
             <li><Link to="/posts">PostList</Link></li>
+            <li><Link to="/chat">Chat</Link></li>
           </ul>
         </nav>
       </div>
@@ -63,6 +65,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/posts/new" element={<PostCreate />} />
         <Route path="/posts" element={<PostList />} />
+        <Route path="/chat" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   );

@@ -7,3 +7,5 @@ venv/pyvenv.cfg
 backend/db.sqlite3
 
 markdown
+
+.env

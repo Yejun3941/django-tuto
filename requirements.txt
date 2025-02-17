@@ -1,0 +1,8 @@
+channels==4.2.0
+channels_redis==4.2.1
+Django==4.2.19
+django-allauth==65.3.1
+django-cors-headers==4.5.0
+djangorestframework==3.15.2
+djangorestframework_simplejwt==5.4.0
+daphne==4.1.2

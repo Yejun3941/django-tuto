@@ -28,4 +28,5 @@ urlpatterns = [
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"), # If send refresh token, will get new access token   
     path("api/accounts/", include("accounts.urls")),
     path("api/", include("posts.urls")),
+    path("api/shop/", include("shop.urls")),
 ]

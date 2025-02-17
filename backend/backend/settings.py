@@ -11,16 +11,18 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-vl^o%j%1cr)(8ik1)$&#e@(=&b^^&07$rsq)$ke+9erzb)v(&c"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -30,6 +32,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# pip installed apps : name of the app / custom installed apps : path to the app
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -44,6 +47,7 @@ INSTALLED_APPS = [
     "posts.apps.PostsConfig",
     "channels", # Django Channels 앱 추가
     "chat.apps.ChatConfig",
+    "shop.apps.ShopConfig",
 ]
 
 MIDDLEWARE = [
@@ -142,9 +146,9 @@ REST_FRAMEWORK = {
 }
 
 # ✅ CORS 설정
+frontend = os.getenv("FRONTEND")
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React(Vite) 클라이언트 주소
-    # "ws://localhost:8001",  # Django Channels 주소 / 주석 처리해도 되는거 보면 문제없나?
+    "http://" + frontend,  # React(Vite) 클라이언트 주소
 ]
 
 # ✅ 모든 요청 방식 허용 (GET, POST, OPTIONS 등)
@@ -168,11 +172,13 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # ✅ Django Channels 설정
+redis_host = os.getenv("REDIS_HOST")
+redis_port = os.getenv("REDIS_PORT")
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer", # Redis를 사용하는 채널 레이어
         "CONFIG": { # Redis 설정
-            "hosts": [("localhost", 6379), # Redis 주소
+            "hosts": [(redis_host, redis_port), # Redis 주소
                     ],
         }
     }

@@ -1,0 +1,60 @@
+version: '3.8'
+services:
+  backend:
+    build: 
+      context: ./backend
+    env_file:
+      - ./backend/.env
+    container_name: myapp_backend
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    depends_on:
+      # - db
+      - redis
+    # 환경변수, 볼륨 설정 가능
+    command: >
+      sh -c "gunicorn --bind 0.0.0.0:8000 backend.wsgi:application & daphne backend.asgi:application --port 8001 --bind 0.0.0.0"
+  
+  # frontend:
+  #   build: 
+  #     context: ./frontend
+  #   container_name: myapp_frontend
+  #   ports:
+  #     - "5173:5173"
+  #   depends_on:
+  #     - backend
+  #   command: >
+  #     sh -c "npm run dev"
+
+  
+
+  # 차후 db 를 아래와 같은 postgresql 이나 MariaDB 로 변경
+  # db:
+  #   image: postgres:14
+  #   container_name: myapp_db
+  #   environment:
+  #     POSTGRES_DB: mydb
+  #     POSTGRES_USER: myuser
+  #     POSTGRES_PASSWORD: mypass
+  #   ports:
+  #     - "5432:5432"
+
+  # db:
+  #   image: mysql:latest
+  #   container_name: myapp_db
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: mypass
+  #     MYSQL_DATABASE: mydb
+  #     MYSQL_USER: myuser
+  #     MYSQL_PASSWORD: mypass
+  #   ports:
+  #     - "3306:3306"
+  
+  # 우선은 sqlite3 사용
+
+  redis:
+    image: redis:latest
+    container_name: myapp_redis
+    ports:
+      - "6379:6379"

@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   backend:
     build: 
@@ -13,9 +12,28 @@ services:
       # - db
       - redis
     # 환경변수, 볼륨 설정 가능
+    volumes:
+      - static_volume:/backend/staticfiles
     command: >
-      sh -c "gunicorn --bind 0.0.0.0:8000 backend.wsgi:application & daphne backend.asgi:application --port 8001 --bind 0.0.0.0"
+      sh -c "
+      python manage.py collectstatic --noinput &&  
+      gunicorn --bind 0.0.0.0:8000 backend.wsgi:application & 
+      daphne backend.asgi:application --port 8001 --bind 0.0.0.0"
   
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: myapp_nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    # 필요하면 volume 설정, environment, etc.
+    volumes:
+      - static_volume:/backend/staticfiles:ro 
+      # volume 으로 공유하면 backend 에서 static 파일을 nginx 에서 사용 가능
+
   # frontend:
   #   build: 
   #     context: ./frontend
@@ -26,8 +44,6 @@ services:
   #     - backend
   #   command: >
   #     sh -c "npm run dev"
-
-  
 
   # 차후 db 를 아래와 같은 postgresql 이나 MariaDB 로 변경
   # db:
@@ -58,3 +74,6 @@ services:
     container_name: myapp_redis
     ports:
       - "6379:6379"
+
+volumes:
+  static_volume:

@@ -1,8 +1,12 @@
+# elasticsearch -> logstash -> kibana -> filebeat
+# elasticserarch -> backend -> nginx
+# redis -> backend
 services:
   backend:
     image: backend_local
     build: 
       context: ./backend
+      dockerfile: Dockerfile
     env_file:
       - ./backend/.env
     container_name: myapp_backend
@@ -12,13 +16,15 @@ services:
     depends_on:
       # - db
       - redis
+      - logstash # backend needs logstash, logstash needs elasticsearch, so elasticsearch is completed
     # 환경변수, 볼륨 설정 가능
     volumes:
       - static_volume:/backend/staticfiles
+    # Gunicorn 예: stdout에 로그를 남기도록, access-logfile, error-logfile 설정
     command: >
       sh -c "
       python manage.py collectstatic --noinput &&  
-      gunicorn --bind 0.0.0.0:8000 backend.wsgi:application & 
+      gunicorn --bind 0.0.0.0:8000 backend.wsgi:application --access-logfile - --error-logfile - & 
       daphne backend.asgi:application --port 8001 --bind 0.0.0.0"
   
   nginx:
@@ -76,6 +82,112 @@ services:
     container_name: myapp_redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # ELK+Filebeat
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.0
+    container_name: elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=elasticsearch # 클러스터 이름
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node             # 단일 노드 모드
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m           # 메모리 설정
+      - network.host=0.0.0.0                     # 올바른 네트워크 설정
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}             # 초기 비밀번호 설정 (비밀번호 재설정 스크립트에서 사용)
+      - xpack.security.enabled=false      # 보안 기능 활성화 필요 (Elasticsearch 8 이상), true 가 되면 ssl 설정 필요
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    ulimits:
+      memlock: # 메모리 락 설정
+        soft: -1 
+        hard: -1  
+    volumes:
+      - esdata:/usr/share/elasticsearch/data     # 데이터 보존 볼륨
+      # 자동 초기화를 위한 스크립트들 (읽기 및 실행 권한)
+      - ./elk/init_elasticsearch.sh:/usr/local/bin/init_elasticsearch.sh:rx
+      - ./elk/entrypoint.sh:/usr/local/bin/entrypoint.sh:rx
+      # 인증서, 서비스 토큰, 비밀번호 플래그 등 보안 관련 파일 보존용 볼륨
+      - elk_config:/usr/share/elasticsearch/config
+      - kibana_token:/usr/share/elasticsearch/config/service_tokens:rw # xpack.security.enabled=true 인 경우 만 enroll token 생성 가능
+    networks:
+      elk:
+    command: >
+      sh -c "/usr/local/bin/entrypoint.sh"
+    healthcheck:
+      test: ["CMD", "curl", "-ks", "http://localhost:9200"] 
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.7.0 
+    container_name: logstash
+    # elasticserarch 와 연결
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200 # xpack.security.enabled=true 인 경우 https 로 변경
+      - ELASTIC_PASSWORD=wantchange
+    volumes:
+      - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    ports:
+      - "5044:5044"    # Beats input
+      # - "5000:5000"    # TCP/UDP input
+    depends_on:
+      - elasticsearch
+    networks:
+      elk:
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.7.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # xpack.security.enabled=true 인 경우 https 로 변경
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+      # superuser 계정 대신 서비스 계정 토큰 사용하므로 ELASTICSEARCH_USERNAME와 ELASTICSEARCH_PASSWORD는 제거
+    depends_on:
+      elasticsearch:
+        condition: service_healthy   # Elasticsearch가 healthcheck를 통과하면 실행
+    volumes:
+      # Elasticsearch에서 생성한 서비스 토큰을 마운트 (읽기 전용)
+      - kibana_token:/usr/share/kibana/config/service_tokens:ro
+    command: >
+      sh -c "export ELASTICSEARCH_SERVICE_TOKEN=$(cat /usr/share/kibana/config/service_tokens/kibana-service-token) && /usr/local/bin/kibana-docker"
+    networks:
+      elk:
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.7.0
+    container_name: filebeat
+    # Filebeat가 Docker 로그를 읽어오기 위해 volume 마운트
+    volumes:
+    # 컨테이너 로그와 Docker 소켓은 container 가 실행되어야 접근 가능, 일종의 가상공간?
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro # Docker 컨테이너 로그
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Docker 소켓
+      - ./elk/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro # Filebeat 설정 파일, 변경이 필요하면 볼륨 마운트, 변경이 자주 필요없다면 이미지에 copy
+    depends_on:
+      - logstash
+    # network_mode: service:logstash 를 사용할 수도 있지만, 여기선 별도 브리지 네트워크
+    # environment, command 등 필요한 설정 가능
+    networks:
+      elk:
+
+
 
 volumes:
-  static_volume:
+  redis_data: # redis data
+  static_volume: # backend static files
+  esdata: # elasticsearch data
+  elk_config: # elk config
+  kibana_token:
+    driver: local
+    driver_opts:
+      type: tmpfs # depend on docker desktop's on/off
+      device: tmpfs
+
+networks:
+  elk:

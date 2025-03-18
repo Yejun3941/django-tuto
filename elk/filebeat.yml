@@ -1,0 +1,12 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    # Docker metadata를 추가(컨테이너 이름, 이미지 등)
+    processors:
+      - add_docker_metadata:
+          match_source: true
+
+# output.logstash 로 Logstash에 전달
+output.logstash:
+  hosts: ["logstash:5044"]

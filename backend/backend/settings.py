@@ -14,6 +14,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR, '.env'))
@@ -185,3 +188,26 @@ CHANNEL_LAYERS = {
         }
     }
 }
+
+sentry_dsn = os.getenv("SENTRY_DSN")
+
+sentry_sdk.init(
+    dsn=sentry_dsn,
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,# 유저정보 등 기본데이터 전송
+    integrations=[DjangoIntegration()], # Django 통합
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for tracing.
+    # 1.0이면 전체 트랜잭션 추적(성능 모니터링). 필요 없으면 0.0~0.5 정도로 조정 가능
+    traces_sample_rate=1.0,
+    _experiments={ # 실험적인 기능을 사용할 때 설정
+        # Set continuous_profiling_auto_start to True
+        # to automatically start the profiler on when
+        # possible.
+        "continuous_profiling_auto_start": True, # 프로파일러 자동 시작
+    },
+    # release="backend@0.0.1", # 버전
+    # environment="development", # 환경
+    # server_name="backend", # 서버 이름
+)

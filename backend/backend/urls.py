@@ -21,6 +21,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 
+
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+# raise error not division by zero
+def trigger_error_other(request):
+    raise Exception("Sentry Error")
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("core.urls")),
@@ -29,4 +37,6 @@ urlpatterns = [
     path("api/accounts/", include("accounts.urls")),
     path("api/", include("posts.urls")),
     path("api/shop/", include("shop.urls")),
+    path('sentry-debug/', trigger_error), # For testing sentry raise error
+    path('sentry-debug-other/', trigger_error_other), # For testing sentry raise error
 ]

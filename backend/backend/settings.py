@@ -30,7 +30,13 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS : manage domain
+# backend : docker-compose service name
+ALLOWED_HOSTS = ["localhost", "backend", "127.0.0.1"]
+
+redis_host = os.getenv("REDIS_HOST")
+# redis_host = "redis" # In docker, redis container name is "redis"
+redis_port = os.getenv("REDIS_PORT")
 
 
 # Application definition
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "core.apps.CoreConfig",
     "corsheaders",
+    "django_prometheus",
     "accounts.apps.AccountsConfig",
     "posts.apps.PostsConfig",
     "channels", # Django Channels 앱 추가
@@ -53,15 +60,19 @@ INSTALLED_APPS = [
     "shop.apps.ShopConfig",
 ]
 
+# 미들웨어 순서 중요, 순서대로 실행됨
+# cors 는 security 미들웨어 다음에 위치해야 함 + cors는 가능한 가장 위에 위치해야 함
 MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',  # ✅ CORS 미들웨어 추가
+    "django_prometheus.middleware.PrometheusBeforeMiddleware", # Prometheus 미들웨어 추가, 순서 중요
+    "django.middleware.security.SecurityMiddleware", # 보안 미들웨어 추가, 보안 관련 헤더를 추가
+    "corsheaders.middleware.CorsMiddleware",  # CORS 미들웨어 추가, 요청 헤더를 읽어와서 응답 헤더에 추가 or 요청 차단
+    "django.contrib.sessions.middleware.SessionMiddleware", # 세션 미들웨어 추가, 세션을 사용하기 위해 필요
+    "django.middleware.common.CommonMiddleware", # 공통 미들웨어 추가, 여러 기능을 제공
+    "django.middleware.csrf.CsrfViewMiddleware", # CSRF 미들웨어 추가, CSRF 공격 방지
+    "django.contrib.auth.middleware.AuthenticationMiddleware", # 인증 미들웨어 추가
+    "django.contrib.messages.middleware.MessageMiddleware", # 메시지 미들웨어 추가
+    "django.middleware.clickjacking.XFrameOptionsMiddleware", # 클릭재킹 방지 미들웨어 추가
+    "django_prometheus.middleware.PrometheusAfterMiddleware", # Prometheus 미들웨어 추가, 순서 중요
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -90,13 +101,32 @@ ASGI_APPLICATION = "backend.asgi.application" # ASGI is the protocol used by Dja
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
+# In DB&Cache, change default to django_prometheus, django_prometheus overrides default settings
+# 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
+        "ENGINE": "django_prometheus.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
+# need to install django-redis, plan to update later
+# CACHE_TTL = 60 * 1500 # Time To Live, 1500분 
+
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
+#         "LOCATION": f"reids://localhost:{redis_port}/1", # Redis 주소
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient", # need to install django-redis 
+#         },
+#         "KEY_PREFIX": "Backend_cache", 
+#     }
+# }
+
+# SESSION_ENGINE = "django.contrib.sessions.backends.cache" # 세션 엔진을 캐시로 설정?
+# SESSION_CACHE_ALIAS = "default" # 세션 캐시 별칭을 default로 설정
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -176,15 +206,12 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # ✅ Django Channels 설정
-redis_host = os.getenv("REDIS_HOST")
-# redis_host = "redis" # In docker, redis container name is "redis"
-redis_port = os.getenv("REDIS_PORT")
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer", # Redis를 사용하는 채널 레이어
         "CONFIG": { # Redis 설정
-            "hosts": [(redis_host, redis_port), # Redis 주소
-                    ],
+            "hosts": [(redis_host, redis_port,0), # Redis 주소
+                ],
         }
     }
 }

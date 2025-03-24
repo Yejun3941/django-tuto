@@ -39,4 +39,5 @@ urlpatterns = [
     path("api/shop/", include("shop.urls")),
     path('sentry-debug/', trigger_error), # For testing sentry raise error
     path('sentry-debug-other/', trigger_error_other), # For testing sentry raise error
+    path("", include("django_prometheus.urls")),  # /metrics endpoint, prometheus send pull request to this endpoint
 ]

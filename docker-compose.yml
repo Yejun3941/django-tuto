@@ -176,6 +176,43 @@ services:
     networks:
       elk:
 
+  
+  prometheus:
+  # In status -> targets , you can see the targets condition
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - backend
+      - node_exporter
+
+  grafana:
+  # 초기 계정: admin, admin
+  # In grafana, add data source -> prometheus -> http://prometheus:9090, not localhost:9090 because of docker network
+  # Add dashboard -> import -> 1860, 2,9528
+  # 1860: node_exporter full dashboard,2: prometheus dashboard, 9528: djangp-exporter dashboard
+  # go to https://grafana.com/grafana/dashboards/, search for more dashboards
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  node_exporter:
+    # cpu, memory, disk, network 등의 metrics 를 수집
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    # network_mode: "host"
+    ports:
+      - "9100:9100"
+    
+
 
 
 volumes:

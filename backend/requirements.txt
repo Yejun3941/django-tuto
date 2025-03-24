@@ -9,3 +9,5 @@ daphne==4.1.2
 python-dotenv==1.0.1
 gunicorn==23.0.0
 sentry-sdk==2.22.0
+prometheus-client==0.14.1 # prometheus use to custom metrics, 우선은 사용 안함
+django-prometheus==2.3.1 # prometheus use to be set middleware

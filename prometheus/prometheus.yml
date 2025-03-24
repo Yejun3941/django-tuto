@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 5s # 수집 주기, 5초마다 수집
+  scrape_timeout: 5s # 수집 타임아웃, 5초 이상 걸리면 실패로 간주
+  evaluation_interval: 5s  # 룰 평가(Alerts 등) 주기,
+
+scrape_configs: # Prometheus가 수집할 대상 설정,job name 단위로 설정
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]  # Prometheus 자기 자신 모니터링
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ["node_exporter:9100"]  # Docker service name:port
+    metrics_path: /metrics # node_exporter의 metrics path, localhost:9100/metrics
+    # scheme: http or https
+
+  # 만약 Django Exporter, Redis Exporter, etc. 있으면 추가
+  - job_name: "django_app"
+    static_configs:
+      - targets: ["backend:8000"] # Django service name:port, not container name
+    metrics_path: "/metrics" # Django Exporter의 metrics path, localhost:8000/metrics
+
+# prometheus 가 pull 방식으로 각 job 의 metirics_path 에서 metrics 를 수집, so 각 job 의 metrics_path 를 설정해야 함

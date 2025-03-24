@@ -19,7 +19,7 @@ from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -55,7 +55,7 @@ INSTALLED_APPS = [
     "django_prometheus",
     "accounts.apps.AccountsConfig",
     "posts.apps.PostsConfig",
-    "channels", # Django Channels 앱 추가
+    "channels",  # Django Channels 앱 추가
     "chat.apps.ChatConfig",
     "shop.apps.ShopConfig",
 ]
@@ -63,16 +63,16 @@ INSTALLED_APPS = [
 # 미들웨어 순서 중요, 순서대로 실행됨
 # cors 는 security 미들웨어 다음에 위치해야 함 + cors는 가능한 가장 위에 위치해야 함
 MIDDLEWARE = [
-    "django_prometheus.middleware.PrometheusBeforeMiddleware", # Prometheus 미들웨어 추가, 순서 중요
-    "django.middleware.security.SecurityMiddleware", # 보안 미들웨어 추가, 보안 관련 헤더를 추가
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # Prometheus 미들웨어 추가, 순서 중요
+    "django.middleware.security.SecurityMiddleware",  # 보안 미들웨어 추가, 보안 관련 헤더를 추가
     "corsheaders.middleware.CorsMiddleware",  # CORS 미들웨어 추가, 요청 헤더를 읽어와서 응답 헤더에 추가 or 요청 차단
-    "django.contrib.sessions.middleware.SessionMiddleware", # 세션 미들웨어 추가, 세션을 사용하기 위해 필요
-    "django.middleware.common.CommonMiddleware", # 공통 미들웨어 추가, 여러 기능을 제공
-    "django.middleware.csrf.CsrfViewMiddleware", # CSRF 미들웨어 추가, CSRF 공격 방지
-    "django.contrib.auth.middleware.AuthenticationMiddleware", # 인증 미들웨어 추가
-    "django.contrib.messages.middleware.MessageMiddleware", # 메시지 미들웨어 추가
-    "django.middleware.clickjacking.XFrameOptionsMiddleware", # 클릭재킹 방지 미들웨어 추가
-    "django_prometheus.middleware.PrometheusAfterMiddleware", # Prometheus 미들웨어 추가, 순서 중요
+    "django.contrib.sessions.middleware.SessionMiddleware",  # 세션 미들웨어 추가, 세션을 사용하기 위해 필요
+    "django.middleware.common.CommonMiddleware",  # 공통 미들웨어 추가, 여러 기능을 제공
+    "django.middleware.csrf.CsrfViewMiddleware",  # CSRF 미들웨어 추가, CSRF 공격 방지
+    "django.contrib.auth.middleware.AuthenticationMiddleware",  # 인증 미들웨어 추가
+    "django.contrib.messages.middleware.MessageMiddleware",  # 메시지 미들웨어 추가
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",  # 클릭재킹 방지 미들웨어 추가
+    "django_prometheus.middleware.PrometheusAfterMiddleware",  # Prometheus 미들웨어 추가, 순서 중요
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -95,7 +95,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
-ASGI_APPLICATION = "backend.asgi.application" # ASGI is the protocol used by Django Channels
+ASGI_APPLICATION = (
+    "backend.asgi.application"  # ASGI is the protocol used by Django Channels
+)
 
 
 # Database
@@ -103,7 +105,7 @@ ASGI_APPLICATION = "backend.asgi.application" # ASGI is the protocol used by Dja
 
 
 # In DB&Cache, change default to django_prometheus, django_prometheus overrides default settings
-# 
+#
 DATABASES = {
     "default": {
         "ENGINE": "django_prometheus.db.backends.sqlite3",
@@ -112,16 +114,16 @@ DATABASES = {
 }
 
 # need to install django-redis, plan to update later
-# CACHE_TTL = 60 * 1500 # Time To Live, 1500분 
+# CACHE_TTL = 60 * 1500 # Time To Live, 1500분
 
 # CACHES = {
 #     "default": {
 #         "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
 #         "LOCATION": f"reids://localhost:{redis_port}/1", # Redis 주소
 #         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient", # need to install django-redis 
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient", # need to install django-redis
 #         },
-#         "KEY_PREFIX": "Backend_cache", 
+#         "KEY_PREFIX": "Backend_cache",
 #     }
 # }
 
@@ -163,18 +165,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR,"staticfiles/")
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-AUTH_USER_MODEL = "accounts.User" # In accounts app, models.py, User class
+AUTH_USER_MODEL = "accounts.User"  # In accounts app, models.py, User class
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     # JWT를 기본 인증 방식을 사용
 }
@@ -208,11 +210,12 @@ CORS_ALLOW_CREDENTIALS = True
 # ✅ Django Channels 설정
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer", # Redis를 사용하는 채널 레이어
-        "CONFIG": { # Redis 설정
-            "hosts": [(redis_host, redis_port,0), # Redis 주소
-                ],
-        }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",  # Redis를 사용하는 채널 레이어
+        "CONFIG": {  # Redis 설정
+            "hosts": [
+                (redis_host, redis_port, 0),  # Redis 주소
+            ],
+        },
     }
 }
 
@@ -222,17 +225,17 @@ sentry_sdk.init(
     dsn=sentry_dsn,
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-    send_default_pii=True,# 유저정보 등 기본데이터 전송
-    integrations=[DjangoIntegration()], # Django 통합
+    send_default_pii=True,  # 유저정보 등 기본데이터 전송
+    integrations=[DjangoIntegration()],  # Django 통합
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for tracing.
     # 1.0이면 전체 트랜잭션 추적(성능 모니터링). 필요 없으면 0.0~0.5 정도로 조정 가능
     traces_sample_rate=1.0,
-    _experiments={ # 실험적인 기능을 사용할 때 설정
+    _experiments={  # 실험적인 기능을 사용할 때 설정
         # Set continuous_profiling_auto_start to True
         # to automatically start the profiler on when
         # possible.
-        "continuous_profiling_auto_start": True, # 프로파일러 자동 시작
+        "continuous_profiling_auto_start": True,  # 프로파일러 자동 시작
     },
     # release="backend@0.0.1", # 버전
     # environment="development", # 환경

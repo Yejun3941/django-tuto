@@ -15,29 +15,34 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView
-)
+from django.urls import path, include
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 def trigger_error(request):
     division_by_zero = 1 / 0
 
+
 # raise error not division by zero
 def trigger_error_other(request):
     raise Exception("Sentry Error")
 
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("core.urls")),
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"), # If send username, password, will get access token and refresh token
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"), # If send refresh token, will get new access token   
+    path(
+        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),  # If send username, password, will get access token and refresh token
+    path(
+        "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
+    ),  # If send refresh token, will get new access token
     path("api/accounts/", include("accounts.urls")),
     path("api/", include("posts.urls")),
     path("api/shop/", include("shop.urls")),
-    path('sentry-debug/', trigger_error), # For testing sentry raise error
-    path('sentry-debug-other/', trigger_error_other), # For testing sentry raise error
-    path("", include("django_prometheus.urls")),  # /metrics endpoint, prometheus send pull request to this endpoint
+    path("sentry-debug/", trigger_error),  # For testing sentry raise error
+    path("sentry-debug-other/", trigger_error_other),  # For testing sentry raise error
+    path(
+        "", include("django_prometheus.urls")
+    ),  # /metrics endpoint, prometheus send pull request to this endpoint
 ]

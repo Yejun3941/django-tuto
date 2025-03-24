@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
 class User(AbstractUser):
     # AbstractUser is a built-in Django model that we can extend to add more fields
     # default fields: username, first_name, last_name, email, password
@@ -9,4 +10,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-    

@@ -2,11 +2,13 @@ from rest_framework import viewsets, permissions
 from .models import Product, Order
 from .serializers import ProductSerializer, OrderSerializer
 
+
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     # isAuthenticatedOrReadOnly: 로그인 사용자는 상품 등록/수정 가능, 비로그인 사용자는 조회만
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()

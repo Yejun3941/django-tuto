@@ -30,16 +30,16 @@ def trigger_error_other(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("core.urls")),
+    path("api/", include("apps.core.urls")),
     path(
         "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
     ),  # If send username, password, will get access token and refresh token
     path(
         "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),  # If send refresh token, will get new access token
-    path("api/accounts/", include("accounts.urls")),
-    path("api/", include("posts.urls")),
-    path("api/shop/", include("shop.urls")),
+    path("api/accounts/", include("apps.accounts.urls")),
+    path("api/", include("apps.posts.urls")),
+    path("api/shop/", include("apps.shop.urls")),
     path("sentry-debug/", trigger_error),  # For testing sentry raise error
     path("sentry-debug-other/", trigger_error_other),  # For testing sentry raise error
     path(

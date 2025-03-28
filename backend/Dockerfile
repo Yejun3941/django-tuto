@@ -27,4 +27,4 @@ EXPOSE 8001
 # CMD ["daphne", "backend.asgi:application", "--port", "8001", "--bind", "0.0.0.0"]
 
 # asgi, wsgi 둘다 위 조건으로 구동하고싶다면?
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:8000 backend.wsgi:application & daphne backend.asgi:application --port 8001 --bind 0.0.0.0"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:8000 config.wsgi:application & daphne config.asgi:application --port 8001 --bind 0.0.0.0"]

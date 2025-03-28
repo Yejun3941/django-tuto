@@ -12,15 +12,15 @@ import django
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
-import chat.routing  # posts 앱의 라우팅 모듈 추가
+from apps.chat import routing  # posts 앱의 라우팅 모듈 추가
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),  # 기존 HTTP 프로토콜
-        "websocket": AuthMiddlewareStack(URLRouter(chat.routing.websocket_urlpatterns)),
+        "websocket": AuthMiddlewareStack(URLRouter(routing.websocket_urlpatterns)),
     }
 )

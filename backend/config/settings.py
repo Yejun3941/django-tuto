@@ -28,11 +28,11 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(int(os.getenv("DEBUG", 0)))  # default to 1 (True)
 
 # ALLOWED_HOSTS : manage domain
 # backend : docker-compose service name
-ALLOWED_HOSTS = ["localhost", "backend", "127.0.0.1"]
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
 
 redis_host = os.getenv("REDIS_HOST")
 # redis_host = "redis" # In docker, redis container name is "redis"
@@ -50,14 +50,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "core.apps.CoreConfig",
+    "apps.core.apps.CoreConfig",
     "corsheaders",
     "django_prometheus",
-    "accounts.apps.AccountsConfig",
-    "posts.apps.PostsConfig",
+    "apps.accounts.apps.AccountsConfig",
+    "apps.posts.apps.PostsConfig",
     "channels",  # Django Channels 앱 추가
-    "chat.apps.ChatConfig",
-    "shop.apps.ShopConfig",
+    "apps.chat.apps.ChatConfig",
+    "apps.shop.apps.ShopConfig",
 ]
 
 # 미들웨어 순서 중요, 순서대로 실행됨
@@ -75,7 +75,7 @@ MIDDLEWARE = [
     "django_prometheus.middleware.PrometheusAfterMiddleware",  # Prometheus 미들웨어 추가, 순서 중요
 ]
 
-ROOT_URLCONF = "backend.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -93,10 +93,10 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 
 ASGI_APPLICATION = (
-    "backend.asgi.application"  # ASGI is the protocol used by Django Channels
+    "config.asgi.application"  # ASGI is the protocol used by Django Channels
 )
 
 

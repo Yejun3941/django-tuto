@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { BrowserRouter , Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -13,8 +13,9 @@ import Chat from './pages/Chat';
 function Home() {
   const [msg, setMsg] = useState('');
 
+
   // useEffect(() => {
-  //   axios.get('http://127.0.0.1:8000/api/hello/')
+  //   axios.get('/api/hello/')
   //     .then(res => setMsg(res.data.message))
   //     .catch(err => console.error(err));
   // }, []);
@@ -22,13 +23,14 @@ function Home() {
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/hello/', {
+        const res = await axios.get('/api/hello/', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`
           }
         });
         setMsg(res.data.message);
       } catch (err) {
+        setMsg('Token access failed');
         console.error(err);
       }
     };

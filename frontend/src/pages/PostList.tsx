@@ -15,7 +15,7 @@ function PostList() {
   const [posts, setPosts] = useState<IPost[]>([]);
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/posts/')
+    axios.get('/api/posts/')
       .then(res => {
         setPosts(res.data);
       })

@@ -7,7 +7,7 @@ function Chat() {
 
   useEffect(() => {
     // WebSocket 객체 생성
-    const ws = new WebSocket('ws://127.0.0.1:8001/ws/chat/');
+    const ws = new WebSocket('/ws/chat/');
     
     // 연결 성공 시
     ws.onopen = () => {

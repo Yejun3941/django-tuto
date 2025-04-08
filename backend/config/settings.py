@@ -34,6 +34,10 @@ DEBUG = bool(int(os.getenv("DEBUG", 0)))  # default to 1 (True)
 # backend : docker-compose service name
 ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
 
+CSRF_TRUSTED_ORIGINS = [
+    host.strip() for host in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if host.strip()# https 따로 추가 필요
+]  # https 따로 추가 필요
+
 redis_host = os.getenv("REDIS_HOST")
 # redis_host = "redis" # In docker, redis container name is "redis"
 redis_port = os.getenv("REDIS_PORT")

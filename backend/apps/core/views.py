@@ -4,4 +4,4 @@ from rest_framework.decorators import api_view
 
 @api_view(["GET"])
 def hello_world(request):
-    return Response({"message": "Hello from Django!"})
+    return Response({"message": "If Token access, you see this message!"})

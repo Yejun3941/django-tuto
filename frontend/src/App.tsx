@@ -9,10 +9,11 @@ import PostCreate from './pages/PostCreate';
 import PostList from './pages/PostList';
 import Chat from './pages/Chat';
 
+// axios 기본 설정
+axios.defaults.withCredentials = true;
 
 function Home() {
   const [msg, setMsg] = useState('');
-
 
   // useEffect(() => {
   //   axios.get('/api/hello/')
@@ -23,11 +24,7 @@ function Home() {
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const res = await axios.get('/api/hello/', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        const res = await axios.get('/api/hello/');
         setMsg(res.data.message);
       } catch (err) {
         setMsg('Token access failed');

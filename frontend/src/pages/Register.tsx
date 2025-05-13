@@ -21,6 +21,7 @@ function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // TODO : API 처리 상태에서 로딩 상태 처리 필요
       const response = await axios.post(
         'api/accounts/register/', 
         formData

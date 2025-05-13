@@ -15,8 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf import settings
 from django.urls import path, include
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 
 def trigger_error(request):
@@ -31,9 +32,9 @@ def trigger_error_other(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("apps.core.urls")),
-    path(
-        "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
-    ),  # If send username, password, will get access token and refresh token
+    # path(
+    #     "api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"
+    # ),  # If send username, password, will get access token and refresh token
     path(
         "api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
     ),  # If send refresh token, will get new access token
@@ -46,3 +47,6 @@ urlpatterns = [
         "", include("django_prometheus.urls")
     ),  # /metrics endpoint, prometheus send pull request to this endpoint
 ]
+
+if settings.DEBUG:
+    urlpatterns += [path("__debug__/", include("debug_toolbar.urls"))]

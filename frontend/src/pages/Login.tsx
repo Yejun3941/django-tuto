@@ -7,26 +7,6 @@ function Login() {
     username: '',
     password: ''
   });
-  // In real case, you should store the access token and refresh token in a secure place like localStorage or cookie. 
-  //  I have some questions. 
-  // That case code is 
-    // const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken') || '');
-    // const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refreshToken') || '');
-    // and
-    // setAccessToken(response.data.access);
-    // setRefreshToken(response.data.refresh);
-    // localStorage.setItem('accessToken', response.data.access);
-    // localStorage.setItem('refreshToken', response.data.refresh
-    // But for simplicity, I will store it in the state.
-    // You can change it to localStorage or cookie.
-    // And you should remove the tokens when the user logs out.
-    // localStorage.removeItem('accessToken');
-    // localStorage.removeItem('refreshToken');
-    // setAccessToken('');
-    // setRefreshToken('');
-
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,19 +19,33 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // TODO : API 처리 상태에서 로딩 상태 처리 필요
       const response = await axios.post(
         '/api/token/', 
-        formData
+        formData,
+        {
+          withCredentials: true // 쿠키를 주고받기 위해 필요
+        }
       );
-      setAccessToken(response.data.access);
-      setRefreshToken(response.data.refresh);
-      localStorage.setItem('accessToken', response.data.access);
-      localStorage.setItem('refreshToken', response.data.refresh);
-      alert("로그인 성공");
+      alert(response.data.message); // TODO : 로그인 성공 시 메시지 출력 로직 추가 필요
       navigate('/');
     } catch (error) {
       console.error(error);
-      alert("로그인 실패");
+      alert("로그인 실패"); // TODO : 로그인 실패 시 오류 처리 필요
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      // 쿠키를 삭제하기 위해 백엔드에 로그아웃 요청
+      await axios.post('/api/token/logout/', {}, {
+        withCredentials: true
+      });
+      alert("로그아웃 성공"); // TODO : 로그아웃 성공 시 쿠키 삭제 로직 추가 필요
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+      alert("로그아웃 실패");
     }
   }
 
@@ -79,13 +73,7 @@ function Login() {
         </div>
         <button type="submit">로그인</button>
       </form>
-
-      {accessToken && (
-        <div>
-          <p>Access Token: {accessToken}</p>
-          <p>Refresh Token: {refreshToken}</p>
-        </div>
-      )}
+      <button onClick={handleLogout}>로그아웃</button>
     </div>
   );
 }

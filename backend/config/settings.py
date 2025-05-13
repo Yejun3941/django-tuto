@@ -10,9 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
+from datetime import timedelta
+
 from pathlib import Path
 from dotenv import load_dotenv
-import os
+
 
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -32,11 +35,17 @@ DEBUG = bool(int(os.getenv("DEBUG", 0)))  # default to 1 (True)
 
 # ALLOWED_HOSTS : manage domain
 # backend : docker-compose service name
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()]
+ALLOWED_HOSTS = [
+    host.strip() for host in os.getenv("ALLOWED_HOSTS", "").split(",") if host.strip()
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    host.strip() for host in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if host.strip()# https 따로 추가 필요
+    host.strip()
+    for host in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if host.strip()  # https 따로 추가 필요
 ]  # https 따로 추가 필요
+
+INTERNAL_IPS = ["127.0.0.1"]  # debug_toolbar에서 사용
 
 redis_host = os.getenv("REDIS_HOST")
 # redis_host = "redis" # In docker, redis container name is "redis"
@@ -56,12 +65,15 @@ INSTALLED_APPS = [
     "rest_framework",
     "apps.core.apps.CoreConfig",
     "corsheaders",
+    "rest_framework_simplejwt",
+    # "rest_framework_simplejwt.token_blacklist",  # 블랙리스트 기능을 사용하기 위해 추가, 우선 에러 발생해서 주석처리
     "django_prometheus",
     "apps.accounts.apps.AccountsConfig",
     "apps.posts.apps.PostsConfig",
     "channels",  # Django Channels 앱 추가
     "apps.chat.apps.ChatConfig",
     "apps.shop.apps.ShopConfig",
+    "debug_toolbar",  # Debug Toolbar 앱 추가,production에서는 주석 처리(불필요+보안이슈)
 ]
 
 # 미들웨어 순서 중요, 순서대로 실행됨
@@ -72,6 +84,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # CORS 미들웨어 추가, 요청 헤더를 읽어와서 응답 헤더에 추가 or 요청 차단
     "django.contrib.sessions.middleware.SessionMiddleware",  # 세션 미들웨어 추가, 세션을 사용하기 위해 필요
     "django.middleware.common.CommonMiddleware",  # 공통 미들웨어 추가, 여러 기능을 제공
+    "debug_toolbar.middleware.DebugToolbarMiddleware",  # Debug Toolbar 미들웨어 추가 , production에서는 주석 처리(불필요+보안이슈)
     "django.middleware.csrf.CsrfViewMiddleware",  # CSRF 미들웨어 추가, CSRF 공격 방지
     "django.contrib.auth.middleware.AuthenticationMiddleware",  # 인증 미들웨어 추가
     "django.contrib.messages.middleware.MessageMiddleware",  # 메시지 미들웨어 추가
@@ -120,16 +133,16 @@ DATABASES = {
 # need to install django-redis, plan to update later
 # CACHE_TTL = 60 * 1500 # Time To Live, 1500분
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
-#         "LOCATION": f"reids://localhost:{redis_port}/1", # Redis 주소
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient", # need to install django-redis
-#         },
-#         "KEY_PREFIX": "Backend_cache",
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django_prometheus.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{redis_host}:{redis_port}/1",  # Redis 주소
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",  # need to install django-redis
+        },
+        "KEY_PREFIX": "Backend_cache",
+    }
+}
 
 # SESSION_ENGINE = "django.contrib.sessions.backends.cache" # 세션 엔진을 캐시로 설정?
 # SESSION_CACHE_ALIAS = "default" # 세션 캐시 별칭을 default로 설정
@@ -209,6 +222,22 @@ CORS_ALLOW_HEADERS = [
 
 # ✅ 클라이언트에서 쿠키를 보낼 수 있도록 설정 (JWT 사용 시 필요)
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_COOKIE_SECURE = True  # CSRF 쿠키 보안 설정, 역할은 HTTPS에서만 쿠키를 전송하도록 설정
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,  # 리프레시 토큰 갱신 활성화
+    # "BLACKLIST_AFTER_ROTATION": True,  # 사용된 리프레시 토큰 블랙리스트 등록
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_COOKIE": "refresh_token",  # HTTP Only 쿠키로 리프레시 토큰 저장
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_SECURE": True,  # HTTPS 환경에서만 전송
+    "AUTH_COOKIE_SAMESITE": "Lax",  # CSRF 보호
+}
 
 
 # ✅ Django Channels 설정
